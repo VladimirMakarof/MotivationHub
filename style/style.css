@@ -1,0 +1,81 @@
+body {
+  background-color: burlywood;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh; /* Установите высоту 100% для полной высоты страницы */
+  margin: 0;
+}
+
+main {
+  flex: 1; /* Оставляет пространство для контента */
+}
+
+footer {
+  text-align: center;
+  padding: 1rem;
+  background-color: #f2f2f2;
+  width: 100%;
+}
+/* styles/styles.css */
+
+/* Обнуляем отступы и поля для всего документа */
+body,
+h1,
+h2,
+p {
+  margin: 0;
+  padding: 0;
+}
+
+/* Добавляем отступы для заголовков */
+h1,
+h2 {
+  margin-bottom: 20px;
+}
+
+/* Задаем стили для заголовка страницы */
+header {
+  background-color: #f2f2f2;
+  padding: 20px;
+  text-align: center;
+}
+
+/* Задаем стили для основного контента */
+main {
+  padding: 20px;
+}
+
+/* Задаем стили для секции с цитатой */
+.quote-section {
+  margin-bottom: 40px;
+}
+
+/* Задаем стили для контейнера цитаты */
+.quote-container {
+  border: 1px solid #ccc;
+  padding: 20px;
+}
+
+/* Задаем стили для текста цитаты */
+.quote p {
+  font-size: 18px;
+  font-style: italic;
+}
+
+/* Задаем стили для подвала */
+footer {
+  background-color: #f2f2f2;
+  padding: 10px 0;
+  text-align: center;
+}
+
+/* Задаем стили для ссылок */
+a {
+  color: #007bff;
+  text-decoration: none;
+}
+
+/* При наведении на ссылки изменяем цвет текста */
+a:hover {
+  color: #0056b3;
+}
