@@ -90,8 +90,7 @@ img {
 }
 
 /* Стилизация общая для всех кнопок */
-.button_section{
-
+.button_section {
 }
 button {
   padding: 10px 20px;
@@ -123,11 +122,11 @@ button {
 }
 
 #love-horizontal-small {
-background-color: #e74c3c;
+  background-color: #e74c3c;
 }
 
 #love-horizontal-large {
-background-color: #e74c3c;
+  background-color: #e74c3c;
 }
 
 #love-vertical-small {
@@ -147,5 +146,3 @@ button:hover {
   box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
   /* Тень при наведении */
 }
-
-
