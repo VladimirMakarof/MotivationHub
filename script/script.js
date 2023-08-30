@@ -5,9 +5,6 @@ document.addEventListener('DOMContentLoaded', function () {
 
   const BASE_URL = 'https://htnkwsplrnasfyxutazx.supabase.co/rest/v1';
 
-  let currentQuote = "";
-
-
 
   // Создаем элемент canvas и добавляем его в контейнер
   const canvasContainer = document.getElementById('canvas-container');
@@ -71,7 +68,7 @@ document.addEventListener('DOMContentLoaded', function () {
   function hasImageInContainer(containerId) {
     const container = document.getElementById(containerId);
     if (container) {
-      return container.querySelector('img') !== null;
+      return container.querySelector('canvas') !== null;
     }
     return false;
   }
@@ -113,7 +110,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
   const accessKey = 'dfN4bFrAAlW5zZtS3d03Y1ycn0XzfERHewdopG9nZm8';
   const endpoint = 'https://api.unsplash.com/photos/random';
-  const imageContainer = document.getElementById('image-container');
+  const imageContainer = document.getElementById('canvas-container');
 
   function fetchRandomImage(query, collections, orientation, size) {
     fetch(`${endpoint}?query=${query}&collections=${collections}&orientation=${orientation}&fit=clip&w=${size}&h=${size}`, {
@@ -124,9 +121,13 @@ document.addEventListener('DOMContentLoaded', function () {
     })
       .then(response => response.json())
       .then(data => {
+        console.log('Response data:', data);
+
         const imageUrl = data.urls.regular;
         addQuoteToCanvas(imageUrl, currentQuote);
         localStorage.setItem('selectedImage', imageUrl);
+
+
 
         const imgElement = document.createElement('img');
         imgElement.src = imageUrl;
@@ -134,7 +135,7 @@ document.addEventListener('DOMContentLoaded', function () {
         imageContainer.innerHTML = '';
         imageContainer.appendChild(imgElement);
 
-        localStorage.setItem('selectedImage', imageUrl);
+        // localStorage.setItem('selectedImage', imageUrl);
 
         displaySavedImage();
       })
@@ -195,40 +196,61 @@ document.addEventListener('DOMContentLoaded', function () {
     const canvas = document.createElement('canvas');
     const ctx = canvas.getContext('2d');
 
-    const img = new Image();
-    img.crossOrigin = 'anonymous';
-    img.src = imageUrl;
+    const savedImage = localStorage.getItem('selectedImage');
+    if (savedImage) {
 
-    img.onload = () => {
-      canvas.width = img.width;
-      canvas.height = img.height;
+      const img = new Image();
+      img.crossOrigin = 'anonymous';
+      img.src = imageUrl;
 
-      ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
 
-      ctx.fillStyle = 'white';
-      ctx.font = '20px Arial';
-      ctx.fillText(quoteText, 10, canvas.height - 30);
+      img.onload = () => {
+        canvas.width = img.width;
+        canvas.height = img.height;
 
-      // Очищаем и добавляем canvas в контейнер
-      canvasContainer.innerHTML = '';
-      canvasContainer.appendChild(canvas);
-    };
+        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+
+        ctx.fillStyle = 'white';
+        ctx.font = '20px Arial';
+        ctx.fillText(quoteText, 10, canvas.height - 30);
+
+        // Очищаем и добавляем canvas в контейнер
+        const canvasContainer = document.getElementById('canvas-container');
+        canvasContainer.innerHTML = '';
+        canvasContainer.appendChild(canvas);
+
+        // Сохраняем URL изображения в localStorage
+        localStorage.setItem('selectedImage', imageUrl);
+      };
+    }
+    image.src = savedImage;
   }
 
   const useQuoteButtons = document.querySelectorAll('.current-quote');
-  useQuoteButtons.forEach(button => {
+  let currentQuote = "";
+
+  useQuoteButtons.forEach((button, index) => {
     button.addEventListener('click', () => {
-      currentQuote = button.getAttribute('data-quote');
-      if (hasImageInContainer('image-container')) {
-        const imageUrl = localStorage.getItem('selectedImage');
-        addQuoteToCanvas(imageUrl, currentQuote);
-        // ...
+      const quoteContainers = document.querySelectorAll('.quote-container');
+
+      if (index < quoteContainers.length) {
+        const quoteContainer = quoteContainers[index];
+        const quote = quoteContainer.querySelector('p').textContent;
+
+        if (hasImageInContainer('canvas-container')) {
+          const imageUrl = localStorage.getItem('selectedImage');
+
+          // Убираем кавычки из начала и конца цитаты
+          const cleanedQuote = quote.replace(/^"|"$/g, '');
+
+          addQuoteToCanvas(imageUrl, cleanedQuote);
+          button.setAttribute('data-quote', quote);
+          currentQuote = cleanedQuote;
+
+          console.log('Сохраненная цитата:', currentQuote);
+        }
       }
     });
   });
 
-  console.log(currentQuote);
 });
-
-
-
