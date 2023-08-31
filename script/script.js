@@ -197,12 +197,11 @@ document.addEventListener('DOMContentLoaded', function () {
     const ctx = canvas.getContext('2d');
 
     const savedImage = localStorage.getItem('selectedImage');
-    if (savedImage) {
+    let img = new Image(); // Объявляем переменную img здесь
 
-      const img = new Image();
+    if (savedImage) {
       img.crossOrigin = 'anonymous';
       img.src = imageUrl;
-
 
       img.onload = () => {
         canvas.width = img.width;
@@ -223,11 +222,21 @@ document.addEventListener('DOMContentLoaded', function () {
         localStorage.setItem('selectedImage', imageUrl);
       };
     }
-    image.src = savedImage;
+    img.src = savedImage; // Теперь переменная img доступна за пределами блока условия
   }
+
 
   const useQuoteButtons = document.querySelectorAll('.current-quote');
   let currentQuote = "";
+
+  // Получаем сохраненную фотографию и цитату
+  const savedImage = localStorage.getItem('selectedImage');
+  const savedQuote = localStorage.getItem('selectedQuote');
+
+  // Если есть сохраненная фотография и цитата, отображаем их на canvas
+  if (savedImage && savedQuote) {
+    addQuoteToCanvas(savedImage, savedQuote);
+  }
 
   useQuoteButtons.forEach((button, index) => {
     button.addEventListener('click', () => {
@@ -247,10 +256,14 @@ document.addEventListener('DOMContentLoaded', function () {
           button.setAttribute('data-quote', quote);
           currentQuote = cleanedQuote;
 
+          // Сохраняем выбранную цитату в локальное хранилище
+          localStorage.setItem('selectedQuote', currentQuote);
+
           console.log('Сохраненная цитата:', currentQuote);
         }
       }
     });
   });
+
 
 });
