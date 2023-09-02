@@ -1,3 +1,6 @@
+let imageUrl;
+let currentQuote = "";
+
 document.addEventListener('DOMContentLoaded', function () {
   try {
     const apiKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imh0bmt3c3Bscm5hc2Z5eHV0YXp4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE2OTMwNTU2NjEsImV4cCI6MjAwODYzMTY2MX0.m8SbumGRrHqY0L-DJ0FiMzlfrvdogBe32L-hgJM_NHo";
@@ -5,6 +8,11 @@ document.addEventListener('DOMContentLoaded', function () {
     headers.append("apikey", apiKey);
 
     const BASE_URL = 'https://htnkwsplrnasfyxutazx.supabase.co/rest/v1';
+
+
+    const fontColorInput = document.getElementById("font-color-input");
+    const fontSizeInput = document.getElementById("font-size-input");
+
 
 
     // Создаем элемент canvas и добавляем его в контейнер
@@ -72,13 +80,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     const refreshShortQuotesButton = document.getElementById("refresh-short-quotes");
     refreshShortQuotesButton.addEventListener("click", () => {
-      if (hasImageInContainer('image-container')) {
-        const imageUrl = localStorage.getItem('selectedImage');
-        addQuoteToCanvas(imageUrl, currentQuote);
-        fetchAndDisplayQuotes("motivation", "short", "short");
-      } else {
-        fetchAndDisplayQuotes("motivation", "short", "short");
-      }
+      fetchAndDisplayQuotes("motivation", "short", "short");
     });
 
     const refreshLongQuotesButton = document.getElementById("refresh-long-quotes");
@@ -119,11 +121,12 @@ document.addEventListener('DOMContentLoaded', function () {
         .then(data => {
           console.log('Response data:', data);
 
-          const imageUrl = data.urls.regular;
+          imageUrl = data.urls.regular; // Обновляем глобальную переменную imageUrl
+          localStorage.setItem('selectedImage', imageUrl); // Сохраняем imageUrl в localStorage
+
           addQuoteToCanvas(imageUrl, currentQuote);
-          localStorage.setItem('selectedImage', imageUrl);
           let quoteText = localStorage.getItem('selectedQuote');
-          addQuoteToCanvas(imageUrl, quoteText)
+          addQuoteToCanvas(imageUrl, quoteText);
         })
         .catch(error => {
           console.error('Error:', error);
@@ -165,7 +168,7 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 
     // ====
-    function addQuoteToCanvas(imageUrl, quoteText) {
+    function addQuoteToCanvas(imageUrl, quoteText, fontColor, fontSize) {
       const canvas = document.createElement('canvas');
       const ctx = canvas.getContext('2d');
 
@@ -182,8 +185,9 @@ document.addEventListener('DOMContentLoaded', function () {
 
           ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
 
-          ctx.fillStyle = 'white';
-          ctx.font = '20px Arial';
+          ctx.fillStyle = fontColor;
+          ctx.font = fontSize;
+
           ctx.fillText(quoteText, 10, canvas.height - 30);
 
 
@@ -198,11 +202,38 @@ document.addEventListener('DOMContentLoaded', function () {
       img.src = savedImage;
     }
 
+    fontSizeInput.addEventListener('input', () => {
+      const fontColor = fontColorInput.value;
+      const fontSize = fontSizeInput.value + 'px Arial'; // Пример: "24px Arial"
+
+      // Получаем сохраненные значения из localStorage
+      const savedImage = localStorage.getItem('selectedImage');
+      const savedQuote = localStorage.getItem('selectedQuote');
+
+      if (savedImage) {
+        imageUrl = savedImage; // Обновляем глобальную переменную imageUrl только если она сохранена в localStorage
+      }
+
+      // Обновляем переменные fontColor и fontSize
+      addQuoteToCanvas(savedImage, savedQuote, fontColor, fontSize);
+
+      localStorage.setItem('fontSize', fontSize); // Сохраняем значение fontSize в localStorage
+      localStorage.setItem('fontColor', fontColor); // Сохраняем значение fontColor в localStorage
+    });
+
+
+    fontColorInput.addEventListener('input', () => {
+      const fontColor = fontColorInput.value;
+      const fontSize = fontSizeInput.value + 'px Arial'; // Пример: "24px Arial"
+      addQuoteToCanvas(imageUrl, currentQuote, fontColor, fontSize);
+
+      localStorage.setItem('fontSize', fontSize); // Сохраняем значение fontSize в localStorage
+      localStorage.setItem('fontColor', fontColor); // Сохраняем значение fontColor в localStorage
+    });
+
+
 
     const useQuoteButtons = document.querySelectorAll('.current-quote');
-    let currentQuote = "";
-
-
 
 
     useQuoteButtons.forEach((button, index) => {
@@ -233,15 +264,70 @@ document.addEventListener('DOMContentLoaded', function () {
 
     });
 
-
-    // Получаем сохраненную фотографию и цитату
+    // Проверяем, есть ли сохраненные значения в localStorage
+    const savedFontSize = localStorage.getItem('fontSize');
+    const savedFontColor = localStorage.getItem('fontColor');
     const savedImage = localStorage.getItem('selectedImage');
     const savedQuote = localStorage.getItem('selectedQuote');
 
-    // Если есть сохраненная фотография и цитата, отображаем их на canvas
-    if (savedImage && savedQuote) {
-      addQuoteToCanvas(savedImage, savedQuote);
+    // Устанавливаем начальные значения для fontSize и fontColor
+    const fontSize = savedFontSize || '36px';
+    const fontColor = savedFontColor || '#004543'; // #000000 - значение по умолчанию
+
+    // Устанавливаем начальные значения для инпутов
+    fontSizeInput.value = parseInt(fontSize, 10); // Преобразуем строку в число
+    fontColorInput.value = fontColor;
+
+    // Если есть сохраненная фотография, отображаем ее на canvas
+    if (savedImage) {
+      currentQuote = savedQuote; // Обновляем currentQuote
+      addQuoteToCanvas(savedImage, currentQuote, fontColor, fontSize);
+    } else {
+      // Если нет сохраненной фотографии, загружаем случайную фотографию
+      fetchRandomImage('motivation', '825815', 'landscape', 300);
     }
+
+    // сохраняем фото
+
+    const saveButton = document.getElementById("save-button");
+
+    saveButton.addEventListener("click", () => {
+      const savedImage = localStorage.getItem('selectedImage');
+
+      if (savedImage) {
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
+
+        const img = new Image();
+        img.crossOrigin = 'anonymous';
+        img.src = savedImage;
+
+        img.onload = () => {
+          canvas.width = img.width;
+          canvas.height = img.height;
+
+          ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+
+          const quoteText = localStorage.getItem('selectedQuote');
+          const fontColor = localStorage.getItem('fontColor');
+          const fontSize = localStorage.getItem('fontSize');
+
+          ctx.fillStyle = fontColor;
+          ctx.font = fontSize + ' Arial';
+          ctx.fillText(quoteText, 10, canvas.height - 30);
+
+          const imageUrl = canvas.toDataURL('image/png');
+
+          const downloadLink = document.createElement('a');
+          downloadLink.href = imageUrl;
+          downloadLink.download = 'motivation_image.png';
+
+          downloadLink.click();
+        };
+      } else {
+        alert('Нет изображения для сохранения.');
+      }
+    });
 
   } catch (error) {
     console.error('An unexpected error occurred:', error);
