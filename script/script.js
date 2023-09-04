@@ -16,11 +16,12 @@ document.addEventListener('DOMContentLoaded', function () {
     // Устанавливаем начальные значения для fontSize и fontColor
     const savedFontSize = localStorage.getItem('fontSize');
     const savedFontColor = localStorage.getItem('fontColor');
-    const fontSize = savedFontSize || '36px';
+    const fontSize = savedFontSize + 'px';
     const fontColor = savedFontColor || '#004543';
 
+
     // Устанавливаем начальные значения для инпутов
-    fontSizeInput.value = fontSize;
+    fontSizeInput.value = savedFontSize;
     fontColorInput.value = fontColor;
 
     // Проверяем, есть ли сохраненные значения в localStorage
@@ -173,13 +174,14 @@ document.addEventListener('DOMContentLoaded', function () {
           imageUrl = data.urls.regular; // Обновляем глобальную переменную imageUrl
           localStorage.setItem('selectedImage', imageUrl); // Сохраняем imageUrl в localStorage
 
-          // Получаем сохраненные значения из localStorage
-          const fontColor = localStorage.getItem('fontColor') || '#004543'; // Здесь устанавливаем цвет шрифта
-          const fontSize = localStorage.getItem('fontSize') || '40px Arial'; // Здесь устанавливаем размер шрифта
+          // Обновляем значения шрифта и размера шрифта из localStorage
+          const fontColor = localStorage.getItem('fontColor') || '#004543';
+          const fontSize = localStorage.getItem('fontSize') || '50';
+          const selectedFont = localStorage.getItem("selectedFont") || "'Amatic SC', cursive";
 
-          addQuoteToCanvas(imageUrl, currentQuote, fontColor, fontSize);
+          addQuoteToCanvas(imageUrl, currentQuote, fontColor, fontSize, selectedFont); // Обновляем canvas
           let quoteText = localStorage.getItem('selectedQuote');
-          addQuoteToCanvas(imageUrl, quoteText, fontColor, fontSize);
+          addQuoteToCanvas(imageUrl, quoteText, fontColor, fontSize, selectedFont); // Обновляем canvas
         })
         .catch(error => {
           console.error('Error:', error);
@@ -363,7 +365,12 @@ document.addEventListener('DOMContentLoaded', function () {
             // Убираем кавычки из начала и конца цитаты
             const cleanedQuote = quote.replace(/^"|"$/g, '');
 
-            addQuoteToCanvas(imageUrl, cleanedQuote);
+            // Обновляем текущие настройки шрифта и размера шрифта
+            const fontColor = localStorage.getItem('fontColor') || '#004543';
+            const fontSize = localStorage.getItem('fontSize') || '50'; // Используем значение из localStorage
+            const selectedFont = localStorage.getItem("selectedFont") || "'Amatic SC', cursive"; // Используем значение из localStorage
+
+            addQuoteToCanvas(imageUrl, cleanedQuote, fontColor, fontSize, selectedFont);
             button.setAttribute('data-quote', quote);
             currentQuote = cleanedQuote;
 
@@ -374,8 +381,8 @@ document.addEventListener('DOMContentLoaded', function () {
           }
         }
       });
-
     });
+
 
 
     // Устанавливаем начальные значения для инпутов
