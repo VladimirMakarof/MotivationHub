@@ -221,12 +221,11 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 
     // ====
-    function addQuoteToCanvas(imageUrl, quoteText) {
+    function addQuoteToCanvas(imageUrl, quoteText, fontColor, fontSize, selectedFont) {
       const canvas = document.createElement('canvas');
       const ctx = canvas.getContext('2d');
 
       const savedImage = localStorage.getItem('selectedImage');
-      const selectedFont = localStorage.getItem("selectedFont") || "'Arial', sans-serif"; // Получаем выбранный шрифт
 
       let img = new Image();
 
@@ -240,14 +239,36 @@ document.addEventListener('DOMContentLoaded', function () {
 
           ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
 
-          // Get font size and color from localStorage
-          const fontSize = localStorage.getItem('fontSize') || '40px Arial';
-          const fontColor = localStorage.getItem('fontColor') || '#004543';
-
+          // Получаем шрифт, цвет и размер из аргументов функции
           ctx.fillStyle = fontColor;
-          ctx.font = `${fontSize}px ${selectedFont}`;  // Устанавливаем выбранный шрифт
+          ctx.font = `${fontSize}px ${selectedFont}`;
 
-          ctx.fillText(quoteText, 10, canvas.height - 30);
+          // Функция для переноса текста на новую строку, если не умещается
+          function wrapText(text, x, y, maxWidth, lineHeight) {
+            const words = text.split(' ');
+            let line = '';
+
+            for (let i = 0; i < words.length; i++) {
+              const testLine = line + words[i] + ' ';
+              const testWidth = ctx.measureText(testLine).width;
+              if (testWidth > maxWidth && i > 0) {
+                ctx.fillText(line, x, y);
+                line = words[i] + ' ';
+                y += lineHeight;
+              } else {
+                line = testLine;
+              }
+            }
+            ctx.fillText(line, x, y);
+          }
+
+          // Начальные координаты для текста
+          const x = 10;
+          const y = canvas.height - 200;
+          const maxWidth = canvas.width - 20; // Учитываем отступы слева и справа
+          const lineHeight = fontSize * 1.2; // Высота строки
+
+          wrapText(quoteText, x, y, maxWidth, lineHeight);
 
           const canvasContainer = document.getElementById('canvas-container');
           canvasContainer.innerHTML = '';
@@ -258,6 +279,7 @@ document.addEventListener('DOMContentLoaded', function () {
       }
       img.src = savedImage;
     }
+
 
 
 
@@ -281,7 +303,7 @@ document.addEventListener('DOMContentLoaded', function () {
       // localStorage.setItem('fontFamily', 'Arial');
 
       // Обновляем переменные fontColor и fontSize
-      addQuoteToCanvas(savedImage, savedQuote, fontColor, fontSize);
+      addQuoteToCanvas(imageUrl, currentQuote, fontColor, fontSize);
     });
 
 
@@ -309,9 +331,15 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 
     fontFamilySelector.addEventListener("change", () => {
-      const selectedFont = fontFamilySelector.value;
-      localStorage.setItem("selectedFont", selectedFont); // Сохраняем выбранный шрифт
-      updateFontSettings(); // Обновляем шрифт на странице
+      const selectedFont = fontFamilySelector.value; // Получаем выбранный шрифт
+      const fontColor = localStorage.getItem('fontColor') || '#004543'; // Получаем сохраненный цвет шрифта
+      const fontSize = localStorage.getItem('fontSize') || '40px Arial'; // Получаем сохраненный размер шрифта
+
+      // Обновляем значение выбранного шрифта в localStorage
+      localStorage.setItem("selectedFont", selectedFont);
+
+      // Обновляем шрифт на canvas
+      addQuoteToCanvas(imageUrl, currentQuote, fontColor, fontSize, selectedFont);
     });
 
 
@@ -351,7 +379,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
 
     // Устанавливаем начальные значения для инпутов
-    fontSizeInput.value = parseInt(fontSize, 10); // Преобразуем строку в число
+    fontSizeInput.value = parseInt(fontSize, 20); // Преобразуем строку в число
     fontColorInput.value = fontColor;
 
     // Если есть сохраненная фотография, отображаем ее на canvas
@@ -364,7 +392,6 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     // сохраняем фото
-
     const saveButton = document.getElementById("save-button");
 
     saveButton.addEventListener("click", () => {
@@ -372,6 +399,7 @@ document.addEventListener('DOMContentLoaded', function () {
       const savedQuote = localStorage.getItem('selectedQuote');
       const savedFontColor = localStorage.getItem('fontColor');
       const savedFontSize = localStorage.getItem('fontSize');
+      const selectedFont = localStorage.getItem("selectedFont") || "'Arial', sans-serif";
 
       if (savedImage && savedQuote && savedFontColor && savedFontSize) {
         const canvas = document.createElement('canvas');
@@ -387,9 +415,37 @@ document.addEventListener('DOMContentLoaded', function () {
 
           ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
 
+          // Используем сохраненные настройки шрифта
           ctx.fillStyle = savedFontColor;
-          ctx.font = savedFontSize + ' Arial';
-          ctx.fillText(savedQuote, 10, canvas.height - 30);
+          ctx.font = `${savedFontSize}px ${selectedFont}`;
+
+          // Начальные координаты для текста, вы можете настроить их как вам нужно
+          const x = 10;
+          const y = canvas.height - 200;
+          const maxWidth = canvas.width - 20; // Учитываем отступы слева и справа
+          const lineHeight = savedFontSize * 1.2; // Высота строки
+
+          // Функция для переноса текста на новую строку, если не умещается
+          function wrapText(text, x, y, maxWidth, lineHeight) {
+            const words = text.split(' ');
+            let line = '';
+
+            for (let i = 0; i < words.length; i++) {
+              const testLine = line + words[i] + ' ';
+              const testWidth = ctx.measureText(testLine).width;
+              if (testWidth > maxWidth && i > 0) {
+                ctx.fillText(line, x, y);
+                line = words[i] + ' ';
+                y += lineHeight;
+              } else {
+                line = testLine;
+              }
+            }
+            ctx.fillText(line, x, y);
+          }
+
+          // Вызываем функцию для переноса текста
+          wrapText(savedQuote, x, y, maxWidth, lineHeight);
 
           const imageUrl = canvas.toDataURL('image/png');
 
@@ -403,6 +459,9 @@ document.addEventListener('DOMContentLoaded', function () {
         alert('Нет изображения или цитаты для сохранения.');
       }
     });
+
+
+
 
 
   } catch (error) {
