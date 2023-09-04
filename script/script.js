@@ -94,12 +94,9 @@ document.addEventListener('DOMContentLoaded', function () {
     console.log(global_data);
 
 
-    function hasImageInContainer(containerId) {
-      const container = document.getElementById(containerId);
-      if (container) {
-        return container.querySelector('canvas') !== null;
-      }
-      return false;
+    function hasImageInContainer(id) {
+      const container = document.getElementById(id);
+      return container?.querySelector('canvas') !== null;
     }
 
     const refreshShortQuotesButton = document.getElementById("refresh-short-quotes");
@@ -128,15 +125,17 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // Функция для обновления размера и цвета шрифта
     function updateFontSettings() {
-      const fontColor = localStorage.getItem('fontColor') || '#004543'; // Здесь устанавливаем цвет шрифта
+      const fontColor = localStorage.getItem("fontColor") || "#004543"; // Здесь устанавливаем цвет шрифта
       const fontSize = localStorage.getItem('fontSize') || '40px Arial'; // Здесь устанавливаем размер шрифта
       const savedImage = localStorage.getItem('selectedImage');
       const quoteText = localStorage.getItem('selectedQuote');
+      const selectedFont = localStorage.getItem("selectedFont") || "'Arial', sans-serif"; // Здесь устанавливаем выбранный шрифт
 
       if (savedImage && quoteText && fontColor && fontSize) {
-        addQuoteToCanvas(savedImage, quoteText, fontColor, fontSize);
+        addQuoteToCanvas(savedImage, quoteText, fontColor, fontSize, selectedFont);
       }
     }
+
 
 
     // Инициализация: загрузка цитат при загрузке страницы
@@ -227,6 +226,8 @@ document.addEventListener('DOMContentLoaded', function () {
       const ctx = canvas.getContext('2d');
 
       const savedImage = localStorage.getItem('selectedImage');
+      const selectedFont = localStorage.getItem("selectedFont") || "'Arial', sans-serif"; // Получаем выбранный шрифт
+
       let img = new Image();
 
       if (savedImage) {
@@ -244,7 +245,7 @@ document.addEventListener('DOMContentLoaded', function () {
           const fontColor = localStorage.getItem('fontColor') || '#004543';
 
           ctx.fillStyle = fontColor;
-          ctx.font = fontSize;
+          ctx.font = `${fontSize}px ${selectedFont}`;  // Устанавливаем выбранный шрифт
 
           ctx.fillText(quoteText, 10, canvas.height - 30);
 
@@ -260,9 +261,12 @@ document.addEventListener('DOMContentLoaded', function () {
 
 
 
+
+
     fontSizeInput.addEventListener('input', () => {
-      const fontColor = fontColorInput.value;
-      const fontSize = fontSizeInput.value + 'px Arial';
+      const fontColor = localStorage.getItem('fontColor') || '#004543';
+      const fontSize = fontSizeInput.value + 'px';
+      addQuoteToCanvas(imageUrl, currentQuote, fontColor, fontSize);
 
       // Получаем сохраненные значения из localStorage
       const savedImage = localStorage.getItem('selectedImage');
@@ -272,23 +276,46 @@ document.addEventListener('DOMContentLoaded', function () {
         imageUrl = savedImage; // Обновляем глобальную переменную imageUrl только если она сохранена в localStorage
       }
 
-      // Обновляем переменные fontColor и fontSize
-      addQuoteToCanvas(savedImage, savedQuote, fontColor, fontSize);
-
       localStorage.setItem('fontSize', fontSize); // Сохраняем значение fontSize в localStorage
       localStorage.setItem('fontColor', fontColor); // Сохраняем значение fontColor в localStorage
+      // localStorage.setItem('fontFamily', 'Arial');
+
+      // Обновляем переменные fontColor и fontSize
+      addQuoteToCanvas(savedImage, savedQuote, fontColor, fontSize);
     });
 
 
     fontColorInput.addEventListener('input', () => {
-      const fontColor = fontColorInput.value;
-      const fontSize = fontSizeInput.value + 'px Arial';
-      addQuoteToCanvas(imageUrl, currentQuote, fontColor, fontSize);
+      const fontColor = fontColorInput.value; // Сохраняем только цвет шрифта
+      const fontSize = localStorage.getItem('fontSize') || '40px Arial'; // Получаем сохраненный размер шрифта
 
-      localStorage.setItem('fontSize', fontSize); // Сохраняем значение fontSize в localStorage
-      localStorage.setItem('fontColor', fontColor); // Сохраняем значение fontColor в localStorage
+      // Обновляем значение fontSize в localStorage
+      localStorage.setItem('fontSize', fontSize);
+      // Обновляем значение fontColor в localStorage
+      localStorage.setItem('fontColor', fontColor);
+
+      addQuoteToCanvas(imageUrl, currentQuote, fontColor, fontSize);
     });
 
+    // ++++++
+
+    const fontFamilySelector = document.getElementById("font-family-selector");
+
+    // Добавляем обработчики событий для сохранения и применения значений
+    fontSizeInput.addEventListener("change", () => {
+      const fontSize = fontSizeInput.value;
+      localStorage.setItem("fontSize", fontSize); // Сохраняем выбранный размер шрифта
+      updateFontSettings(); // Обновляем шрифт на странице
+    });
+
+    fontFamilySelector.addEventListener("change", () => {
+      const selectedFont = fontFamilySelector.value;
+      localStorage.setItem("selectedFont", selectedFont); // Сохраняем выбранный шрифт
+      updateFontSettings(); // Обновляем шрифт на странице
+    });
+
+
+    // ++++
 
 
     const useQuoteButtons = document.querySelectorAll('.current-quote');
@@ -342,8 +369,11 @@ document.addEventListener('DOMContentLoaded', function () {
 
     saveButton.addEventListener("click", () => {
       const savedImage = localStorage.getItem('selectedImage');
+      const savedQuote = localStorage.getItem('selectedQuote');
+      const savedFontColor = localStorage.getItem('fontColor');
+      const savedFontSize = localStorage.getItem('fontSize');
 
-      if (savedImage) {
+      if (savedImage && savedQuote && savedFontColor && savedFontSize) {
         const canvas = document.createElement('canvas');
         const ctx = canvas.getContext('2d');
 
@@ -357,13 +387,9 @@ document.addEventListener('DOMContentLoaded', function () {
 
           ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
 
-          const quoteText = localStorage.getItem('selectedQuote');
-          const fontColor = localStorage.getItem('fontColor');
-          const fontSize = localStorage.getItem('fontSize');
-
-          ctx.fillStyle = fontColor;
-          ctx.font = fontSize + ' Arial';
-          ctx.fillText(quoteText, 10, canvas.height - 30);
+          ctx.fillStyle = savedFontColor;
+          ctx.font = savedFontSize + ' Arial';
+          ctx.fillText(savedQuote, 10, canvas.height - 30);
 
           const imageUrl = canvas.toDataURL('image/png');
 
@@ -374,9 +400,10 @@ document.addEventListener('DOMContentLoaded', function () {
           downloadLink.click();
         };
       } else {
-        alert('Нет изображения для сохранения.');
+        alert('Нет изображения или цитаты для сохранения.');
       }
     });
+
 
   } catch (error) {
     console.error('An unexpected error occurred:', error);
