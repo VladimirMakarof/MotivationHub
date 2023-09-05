@@ -171,6 +171,9 @@ document.addEventListener('DOMContentLoaded', function () {
         .then(data => {
           console.log('Response data:', data);
 
+          const defaultFontSize = '26px'; // Измените на желаемое значение
+          const defaultFontColor = '#000000'; // Измените на желаемое значение
+
           imageUrl = data.urls.regular; // Обновляем глобальную переменную imageUrl
           localStorage.setItem('selectedImage', imageUrl); // Сохраняем imageUrl в localStorage
 
