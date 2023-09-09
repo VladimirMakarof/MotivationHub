@@ -18,6 +18,13 @@ document.addEventListener('DOMContentLoaded', function () {
     const savedFontColor = localStorage.getItem('fontColor');
     const fontSize = savedFontSize + 'px';
     const fontColor = savedFontColor || '#004543';
+    // Устанавливаем начальное значение для fontFamilySelector из localStorage
+    const savedFont = localStorage.getItem("selectedFont");
+    const fontFamilySelector = document.getElementById("font-family-selector");
+    if (savedFont) {
+      fontFamilySelector.value = savedFont;
+    }
+
 
 
     // Устанавливаем начальные значения для инпутов
@@ -231,7 +238,6 @@ document.addEventListener('DOMContentLoaded', function () {
       const ctx = canvas.getContext('2d');
 
       const savedImage = localStorage.getItem('selectedImage');
-
       let img = new Image();
 
       if (savedImage) {
@@ -244,7 +250,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
           ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
 
-          // Получаем шрифт, цвет и размер из аргументов функции
+          // Устанавливаем шрифт, цвет и размер из аргументов функции
           ctx.fillStyle = fontColor;
           ctx.font = `${fontSize}px ${selectedFont}`;
 
@@ -279,11 +285,12 @@ document.addEventListener('DOMContentLoaded', function () {
           canvasContainer.innerHTML = '';
           canvasContainer.appendChild(canvas);
 
+          // Сохраняем imageUrl в localStorage
           localStorage.setItem('selectedImage', imageUrl);
         };
       }
-      img.src = savedImage;
     }
+
 
 
 
@@ -303,13 +310,17 @@ document.addEventListener('DOMContentLoaded', function () {
         imageUrl = savedImage; // Обновляем глобальную переменную imageUrl только если она сохранена в localStorage
       }
 
+      // Обновляем размер шрифта в canvas
+      addQuoteToCanvas(imageUrl, currentQuote, fontColor, fontSize, selectedFont);
       localStorage.setItem('fontSize', fontSize); // Сохраняем значение fontSize в localStorage
       localStorage.setItem('fontColor', fontColor); // Сохраняем значение fontColor в localStorage
       // localStorage.setItem('fontFamily', 'Arial');
 
-      // Обновляем переменные fontColor и fontSize
-      addQuoteToCanvas(imageUrl, currentQuote, fontColor, fontSize);
+
+
     });
+
+
 
 
     fontColorInput.addEventListener('input', () => {
@@ -326,20 +337,21 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // ++++++
 
-    const fontFamilySelector = document.getElementById("font-family-selector");
+
+    let selectedFont = 'Arial'; // Объявляем переменную selectedFont и устанавливаем значение по умолчанию
 
     // Добавляем обработчики событий для сохранения и применения значений
-    fontSizeInput.addEventListener("change", () => {
+    fontSizeInput.addEventListener("input", () => {
       const fontSize = fontSizeInput.value;
       localStorage.setItem("fontSize", fontSize); // Сохраняем выбранный размер шрифта
       updateFontSettings(); // Обновляем шрифт на странице
     });
 
-    fontFamilySelector.addEventListener("change", () => {
+    fontFamilySelector.addEventListener("input", () => {
       const selectedFont = fontFamilySelector.value; // Получаем выбранный шрифт
       const fontColor = localStorage.getItem('fontColor') || '#004543'; // Получаем сохраненный цвет шрифта
       const fontSize = localStorage.getItem('fontSize') || '40px Arial'; // Получаем сохраненный размер шрифта
-
+      imageUrl = localStorage.getItem('selectedImage');
       // Обновляем значение выбранного шрифта в localStorage
       localStorage.setItem("selectedFont", selectedFont);
 
@@ -389,7 +401,8 @@ document.addEventListener('DOMContentLoaded', function () {
 
 
     // Устанавливаем начальные значения для инпутов
-    fontSizeInput.value = parseInt(fontSize, 20); // Преобразуем строку в число
+    fontSizeInput.value = parseInt(fontSize, 10); // Преобразуем строку в число с системой счисления 10
+
     fontColorInput.value = fontColor;
 
     // Если есть сохраненная фотография, отображаем ее на canvas
@@ -469,11 +482,6 @@ document.addEventListener('DOMContentLoaded', function () {
         alert('Нет изображения или цитаты для сохранения.');
       }
     });
-
-
-
-
-
   } catch (error) {
     console.error('An unexpected error occurred:', error);
   }
