@@ -28,7 +28,7 @@ document.addEventListener('DOMContentLoaded', function () {
     const savedImage = localStorage.getItem('selectedImage');
     const savedQuote = localStorage.getItem('selectedQuote');
 
-    if (savedImage !== null) {
+    if (savedImage) {
       currentQuote = savedQuote;
       addQuoteToCanvas(savedImage, currentQuote, fontColor, fontSize);
     } else {
@@ -128,8 +128,6 @@ document.addEventListener('DOMContentLoaded', function () {
     function updateFontSettings() {
       const fontColor = localStorage.getItem("fontColor") || "#004543"; // Здесь устанавливаем цвет шрифта
       const fontSize = localStorage.getItem('fontSize') || '40px Arial'; // Здесь устанавливаем размер шрифта
-
-      // Проверяем, есть ли сохраненное изображение в localStorage
       const savedImage = localStorage.getItem('selectedImage');
       const quoteText = localStorage.getItem('selectedQuote');
       const selectedFont = localStorage.getItem("selectedFont") || "'Arial', sans-serif"; // Здесь устанавливаем выбранный шрифт
@@ -138,7 +136,6 @@ document.addEventListener('DOMContentLoaded', function () {
         addQuoteToCanvas(savedImage, quoteText, fontColor, fontSize, selectedFont);
       }
     }
-
 
 
 
@@ -161,7 +158,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     const accessKey = 'dfN4bFrAAlW5zZtS3d03Y1ycn0XzfERHewdopG9nZm8';
     const endpoint = 'https://api.unsplash.com/photos/random';
-
+    const imageContainer = document.getElementById('canvas-container');
 
     function fetchRandomImage(query, collections, orientation, size) {
       fetch(`${endpoint}?query=${query}&collections=${collections}&orientation=${orientation}&fit=clip&w=${size}&h=${size}`, {
@@ -318,27 +315,14 @@ document.addEventListener('DOMContentLoaded', function () {
     fontColorInput.addEventListener('input', () => {
       const fontColor = fontColorInput.value; // Сохраняем только цвет шрифта
       const fontSize = localStorage.getItem('fontSize') || '40px Arial'; // Получаем сохраненный размер шрифта
-      const selectedFont = localStorage.getItem("selectedFont") || "'Arial', sans-serif"; // Получаем сохраненный шрифт
-
-      // Проверяем, есть ли сохраненное изображение в localStorage
-      const savedImage = localStorage.getItem('selectedImage');
-      const quoteText = localStorage.getItem('selectedQuote');
-      const imageUrl = savedImage || ''; // По умолчанию пустая строка, если нет сохраненного изображения
 
       // Обновляем значение fontSize в localStorage
       localStorage.setItem('fontSize', fontSize);
       // Обновляем значение fontColor в localStorage
       localStorage.setItem('fontColor', fontColor);
-      // Обновляем значение selectedFont в localStorage
-      localStorage.setItem("selectedFont", selectedFont);
 
-      // Проверяем, есть ли сохраненное изображение, прежде чем вызвать addQuoteToCanvas
-      if (savedImage && quoteText && fontColor && fontSize) {
-        addQuoteToCanvas(imageUrl, currentQuote, fontColor, fontSize, selectedFont);
-      }
+      addQuoteToCanvas(imageUrl, currentQuote, fontColor, fontSize);
     });
-
-
 
     // ++++++
 
