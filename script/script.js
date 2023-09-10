@@ -16,8 +16,8 @@ document.addEventListener('DOMContentLoaded', function () {
     // Устанавливаем начальные значения для fontSize и fontColor
     const savedFontSize = localStorage.getItem('fontSize');
     const savedFontColor = localStorage.getItem('fontColor');
-    const fontSize = savedFontSize + 'px';
-    const fontColor = savedFontColor || '#004543';
+    const fontSize = localStorage.getItem('fontSize') || '40px Arial';
+    const fontColor = localStorage.getItem('fontColor') || '#004543';
     // Устанавливаем начальное значение для fontFamilySelector из localStorage
     const savedFont = localStorage.getItem("selectedFont");
     const fontFamilySelector = document.getElementById("font-family-selector");
@@ -28,8 +28,10 @@ document.addEventListener('DOMContentLoaded', function () {
 
 
     // Устанавливаем начальные значения для инпутов
-    fontSizeInput.value = savedFontSize;
-    fontColorInput.value = fontColor;
+    fontSizeInput.value = parseInt(savedFontSize, 10);
+    fontColorInput.value = savedFontColor;
+
+    addQuoteToCanvas(imageUrl, currentQuote, fontColor, fontSize);
 
     // Проверяем, есть ли сохраненные значения в localStorage
     const savedImage = localStorage.getItem('selectedImage');
@@ -133,11 +135,12 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // Функция для обновления размера и цвета шрифта
     function updateFontSettings() {
-      const fontColor = localStorage.getItem("fontColor") || "#004543"; // Здесь устанавливаем цвет шрифта
-      const fontSize = localStorage.getItem('fontSize') || '40px Arial'; // Здесь устанавливаем размер шрифта
+      const fontColor = localStorage.getItem("fontColor") || "#004543"; //  устанавливаем цвет шрифта
+      const fontSize = localStorage.getItem('fontSize') || '40px Arial'; //  устанавливаем размер шрифта
       const savedImage = localStorage.getItem('selectedImage');
       const quoteText = localStorage.getItem('selectedQuote');
-      const selectedFont = localStorage.getItem("selectedFont") || "'Arial', sans-serif"; // Здесь устанавливаем выбранный шрифт
+      const selectedFont = localStorage.getItem('selectedFont') || "'Amatic SC', cursive";
+      //  устанавливаем выбранный шрифт
 
       if (savedImage && quoteText && fontColor && fontSize) {
         addQuoteToCanvas(savedImage, quoteText, fontColor, fontSize, selectedFont);
@@ -165,7 +168,6 @@ document.addEventListener('DOMContentLoaded', function () {
 
     const accessKey = 'dfN4bFrAAlW5zZtS3d03Y1ycn0XzfERHewdopG9nZm8';
     const endpoint = 'https://api.unsplash.com/photos/random';
-    const imageContainer = document.getElementById('canvas-container');
 
     function fetchRandomImage(query, collections, orientation, size) {
       fetch(`${endpoint}?query=${query}&collections=${collections}&orientation=${orientation}&fit=clip&w=${size}&h=${size}`, {
@@ -232,12 +234,47 @@ document.addEventListener('DOMContentLoaded', function () {
       fetchRandomImage('love', '208403', 'portrait', 1200);
     });
 
-    // ====
-    function addQuoteToCanvas(imageUrl, quoteText, fontColor, fontSize, selectedFont) {
-      const canvas = document.createElement('canvas');
-      const ctx = canvas.getContext('2d');
 
+    const ctx = canvas.getContext('2d');
+
+    // ====
+    // Определите начальное значение y и получите его из localStorage (если есть)
+    let y = localStorage.getItem('quoteY') ? parseInt(localStorage.getItem('quoteY'), 10) : canvas.height - 400;
+
+    // Обновление высоты цитаты и сохранение ее в localStorage
+    function updateYAndSaveToLocalStorage(newY) {
+      y = newY;
+      localStorage.setItem('quoteY', y);
+    }
+    // Добавьте обработчики событий для кнопок "Вверх" и "Вниз"
+    const moveUpButton = document.getElementById("move-up-button");
+    const moveDownButton = document.getElementById("move-down-button");
+
+    // Добавьте обработчики событий для кнопок "Вверх" и "Вниз"
+    moveUpButton.addEventListener("click", () => {
+      updateYAndSaveToLocalStorage(y - 10);
+      const selectedFont = localStorage.getItem('selectedFont') || "'Amatic SC', cursive"; // Получите шрифт из localStorage
+      const fontColor = localStorage.getItem('fontColor') || '#004543'; // Получите цвет из localStorage
+      addQuoteToCanvas(imageUrl, currentQuote, fontColor, fontSize, selectedFont);
+    });
+
+    moveDownButton.addEventListener("click", () => {
+      updateYAndSaveToLocalStorage(y + 10);
+      const selectedFont = localStorage.getItem('selectedFont') || "'Amatic SC', cursive"; // Получите шрифт из localStorage
+      const fontColor = localStorage.getItem('fontColor') || '#004543'; // Получите цвет из localStorage
+      addQuoteToCanvas(imageUrl, currentQuote, fontColor, fontSize, selectedFont);
+    });
+
+
+
+
+
+
+    // ===
+
+    function addQuoteToCanvas(imageUrl, quoteText, fontColor, fontSize, selectedFont) {
       const savedImage = localStorage.getItem('selectedImage');
+      imageUrl = localStorage.getItem('selectedImage');
       let img = new Image();
 
       if (savedImage) {
@@ -254,32 +291,13 @@ document.addEventListener('DOMContentLoaded', function () {
           ctx.fillStyle = fontColor;
           ctx.font = `${fontSize}px ${selectedFont}`;
 
-          // Функция для переноса текста на новую строку, если не умещается
-          function wrapText(text, x, y, maxWidth, lineHeight) {
-            const words = text.split(' ');
-            let line = '';
-
-            for (let i = 0; i < words.length; i++) {
-              const testLine = line + words[i] + ' ';
-              const testWidth = ctx.measureText(testLine).width;
-              if (testWidth > maxWidth && i > 0) {
-                ctx.fillText(line, x, y);
-                line = words[i] + ' ';
-                y += lineHeight;
-              } else {
-                line = testLine;
-              }
-            }
-            ctx.fillText(line, x, y);
-          }
-
-          // Начальные координаты для текста
-          const x = 10;
-          const y = canvas.height - 200;
+          // Начальные координаты для текста - используйте значение y
+          const x = parseInt(localStorage.getItem('quoteX')) || 50;
           const maxWidth = canvas.width - 20; // Учитываем отступы слева и справа
           const lineHeight = fontSize * 1.2; // Высота строки
 
-          wrapText(quoteText, x, y, maxWidth, lineHeight);
+          // Передайте ctx в функцию wrapText
+          wrapText(quoteText, x, y, maxWidth, lineHeight, ctx);
 
           const canvasContainer = document.getElementById('canvas-container');
           canvasContainer.innerHTML = '';
@@ -291,8 +309,24 @@ document.addEventListener('DOMContentLoaded', function () {
       }
     }
 
+    // Функция для переноса текста на новую строку, если не умещается
+    function wrapText(text, x, y, maxWidth, lineHeight, ctx) {
+      const words = text.split(' ');
+      let line = '';
 
-
+      for (let i = 0; i < words.length; i++) {
+        const testLine = line + words[i] + ' ';
+        const testWidth = ctx.measureText(testLine).width;
+        if (testWidth > maxWidth && i > 0) {
+          ctx.fillText(line, x, y);
+          line = words[i] + ' ';
+          y += lineHeight;
+        } else {
+          line = testLine;
+        }
+      }
+      ctx.fillText(line, x, y);
+    }
 
 
 
@@ -304,7 +338,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
       // Получаем сохраненные значения из localStorage
       const savedImage = localStorage.getItem('selectedImage');
-      const savedQuote = localStorage.getItem('selectedQuote');
+      // const savedQuote = localStorage.getItem('selectedQuote');
 
       if (savedImage) {
         imageUrl = savedImage; // Обновляем глобальную переменную imageUrl только если она сохранена в localStorage
@@ -324,21 +358,34 @@ document.addEventListener('DOMContentLoaded', function () {
 
 
     fontColorInput.addEventListener('input', () => {
-      const fontColor = fontColorInput.value; // Сохраняем только цвет шрифта
-      const fontSize = localStorage.getItem('fontSize') || '40px Arial'; // Получаем сохраненный размер шрифта
+      const fontColor = fontColorInput.value;
+      localStorage.setItem('fontColor', fontColor); // Сохраняем цвет в localStorage
 
-      // Обновляем значение fontSize в localStorage
-      localStorage.setItem('fontSize', fontSize);
-      // Обновляем значение fontColor в localStorage
-      localStorage.setItem('fontColor', fontColor);
+      // Получите и примените значение шрифта из localStorage
+      const savedFont = localStorage.getItem('selectedFont');
+      const fontSize = localStorage.getItem('fontSize') || '40px Arial';
 
-      addQuoteToCanvas(imageUrl, currentQuote, fontColor, fontSize);
+      addQuoteToCanvas(imageUrl, currentQuote, fontColor, fontSize, savedFont);
     });
+
+    let selectedFont = 'Arial'; // Объявляем переменную selectedFont и устанавливаем значение по умолчанию
+
+    fontFamilySelector.addEventListener('input', () => {
+      const selectedFont = fontFamilySelector.value;
+      localStorage.setItem('selectedFont', selectedFont); // Сохраняем шрифт в localStorage
+
+      // Получите и примените значение цвета из localStorage
+      const fontColor = localStorage.getItem('fontColor') || '#004543';
+      const fontSize = localStorage.getItem('fontSize') || '40px Arial';
+
+      addQuoteToCanvas(imageUrl, currentQuote, fontColor, fontSize, selectedFont);
+    });
+
 
     // ++++++
 
 
-    let selectedFont = 'Arial'; // Объявляем переменную selectedFont и устанавливаем значение по умолчанию
+
 
     // Добавляем обработчики событий для сохранения и применения значений
     fontSizeInput.addEventListener("input", () => {
@@ -347,17 +394,6 @@ document.addEventListener('DOMContentLoaded', function () {
       updateFontSettings(); // Обновляем шрифт на странице
     });
 
-    fontFamilySelector.addEventListener("input", () => {
-      const selectedFont = fontFamilySelector.value; // Получаем выбранный шрифт
-      const fontColor = localStorage.getItem('fontColor') || '#004543'; // Получаем сохраненный цвет шрифта
-      const fontSize = localStorage.getItem('fontSize') || '40px Arial'; // Получаем сохраненный размер шрифта
-      imageUrl = localStorage.getItem('selectedImage');
-      // Обновляем значение выбранного шрифта в localStorage
-      localStorage.setItem("selectedFont", selectedFont);
-
-      // Обновляем шрифт на canvas
-      addQuoteToCanvas(imageUrl, currentQuote, fontColor, fontSize, selectedFont);
-    });
 
 
     // ++++
@@ -401,9 +437,11 @@ document.addEventListener('DOMContentLoaded', function () {
 
 
     // Устанавливаем начальные значения для инпутов
-    fontSizeInput.value = parseInt(fontSize, 10); // Преобразуем строку в число с системой счисления 10
+    // fontSizeInput.value = parseInt(fontSize, 10); // Преобразуем строку в число с системой счисления 10
 
-    fontColorInput.value = fontColor;
+    // fontColorInput.value = fontColor;
+    fontSizeInput.value = parseInt(savedFontSize, 10);
+    fontColorInput.value = savedFontColor;
 
     // Если есть сохраненная фотография, отображаем ее на canvas
     if (savedImage) {
@@ -422,7 +460,8 @@ document.addEventListener('DOMContentLoaded', function () {
       const savedQuote = localStorage.getItem('selectedQuote');
       const savedFontColor = localStorage.getItem('fontColor');
       const savedFontSize = localStorage.getItem('fontSize');
-      const selectedFont = localStorage.getItem("selectedFont") || "'Arial', sans-serif";
+      const selectedFont = localStorage.getItem('selectedFont') || "'Amatic SC', cursive";
+
 
       if (savedImage && savedQuote && savedFontColor && savedFontSize) {
         const canvas = document.createElement('canvas');
@@ -442,9 +481,10 @@ document.addEventListener('DOMContentLoaded', function () {
           ctx.fillStyle = savedFontColor;
           ctx.font = `${savedFontSize}px ${selectedFont}`;
 
-          // Начальные координаты для текста, вы можете настроить их как вам нужно
-          const x = 10;
-          const y = canvas.height - 200;
+          // Получаем сохраненные координаты x и y из localStorage
+          const x = parseInt(localStorage.getItem('quoteX')) || 50;
+          const y = parseInt(localStorage.getItem('quoteY')) || canvas.height - 200;
+
           const maxWidth = canvas.width - 20; // Учитываем отступы слева и справа
           const lineHeight = savedFontSize * 1.2; // Высота строки
 
@@ -482,6 +522,9 @@ document.addEventListener('DOMContentLoaded', function () {
         alert('Нет изображения или цитаты для сохранения.');
       }
     });
+
+
+
   } catch (error) {
     console.error('An unexpected error occurred:', error);
   }
