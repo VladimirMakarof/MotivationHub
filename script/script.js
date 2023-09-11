@@ -245,6 +245,7 @@ document.addEventListener('DOMContentLoaded', function () {
     function updateYAndSaveToLocalStorage(newY) {
       y = newY;
       localStorage.setItem('quoteY', y);
+      document.getElementById('quote-y-value').textContent = `Y Value: ${newY}`;
     }
     // Добавьте обработчики событий для кнопок "Вверх" и "Вниз"
     const moveUpButton = document.getElementById("move-up-button");
