@@ -8,7 +8,8 @@ document.addEventListener('DOMContentLoaded', function () {
     headers.append("apikey", apiKey);
 
     const BASE_URL = 'https://htnkwsplrnasfyxutazx.supabase.co/rest/v1';
-
+    const endpoint = 'https://api.unsplash.com/photos/random';
+    const accessKey = 'dfN4bFrAAlW5zZtS3d03Y1ycn0XzfERHewdopG9nZm8';
 
     const fontColorInput = document.getElementById("font-color-input");
     const fontSizeInput = document.getElementById("font-size-input");
@@ -16,14 +17,20 @@ document.addEventListener('DOMContentLoaded', function () {
     // Устанавливаем начальные значения для fontSize и fontColor
     const savedFontSize = localStorage.getItem('fontSize');
     const savedFontColor = localStorage.getItem('fontColor');
-    const fontSize = localStorage.getItem('fontSize') || '40px Arial';
+    const fontSize = localStorage.getItem('fontSize') || '40px';
     const fontColor = localStorage.getItem('fontColor') || '#004543';
     // Устанавливаем начальное значение для fontFamilySelector из localStorage
-    const savedFont = localStorage.getItem("selectedFont");
     const fontFamilySelector = document.getElementById("font-family-selector");
+    const savedFont = localStorage.getItem("selectedFont"); // Получаем сохраненное значение из localStorage
+
+    // Проверяем, есть ли сохраненное значение в localStorage
     if (savedFont) {
       fontFamilySelector.value = savedFont;
+    } else {
+      // Если нет сохраненного значения, устанавливаем значение по умолчанию из элемента
+      localStorage.setItem("selectedFont", fontFamilySelector.value);
     }
+
 
 
 
@@ -136,7 +143,13 @@ document.addEventListener('DOMContentLoaded', function () {
     // Функция для обновления размера и цвета шрифта
     function updateFontSettings() {
       const fontColor = localStorage.getItem("fontColor") || "#004543"; //  устанавливаем цвет шрифта
-      const fontSize = localStorage.getItem('fontSize') || '40px Arial'; //  устанавливаем размер шрифта
+      const fontSize = localStorage.getItem('fontSize') || '50';
+      // Проверьте, есть ли значение fontSize в localStorage
+      console.log('Current fontSize:', fontSize);
+      if (!localStorage.getItem('fontSize')) {
+        // Если его нет, сохраните значение '50' в localStorage
+        localStorage.setItem('fontSize', fontSize);
+      }
       const savedImage = localStorage.getItem('selectedImage');
       const quoteText = localStorage.getItem('selectedQuote');
       const selectedFont = localStorage.getItem('selectedFont') || "'Amatic SC', cursive";
@@ -166,8 +179,8 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // фото  API 
 
-    const accessKey = 'dfN4bFrAAlW5zZtS3d03Y1ycn0XzfERHewdopG9nZm8';
-    const endpoint = 'https://api.unsplash.com/photos/random';
+
+
 
     function fetchRandomImage(query, collections, orientation, size) {
       fetch(`${endpoint}?query=${query}&collections=${collections}&orientation=${orientation}&fit=clip&w=${size}&h=${size}`, {
@@ -179,9 +192,6 @@ document.addEventListener('DOMContentLoaded', function () {
         .then(response => response.json())
         .then(data => {
           console.log('Response data:', data);
-
-          const defaultFontSize = '26px'; // Измените на желаемое значение
-          const defaultFontColor = '#000000'; // Измените на желаемое значение
 
           imageUrl = data.urls.regular; // Обновляем глобальную переменную imageUrl
           localStorage.setItem('selectedImage', imageUrl); // Сохраняем imageUrl в localStorage
@@ -239,13 +249,12 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // ====
     // Определите начальное значение y и получите его из localStorage (если есть)
-    let y = localStorage.getItem('quoteY') ? parseInt(localStorage.getItem('quoteY'), 10) : canvas.height - 400;
+    let y = localStorage.getItem('quoteY') ? parseInt(localStorage.getItem('quoteY'), 10) : canvas.height - 40;
 
     // Обновление высоты цитаты и сохранение ее в localStorage
     function updateYAndSaveToLocalStorage(newY) {
       y = newY;
       localStorage.setItem('quoteY', y);
-      document.getElementById('quote-y-value').textContent = `Y Value: ${newY}`;
     }
     // Добавьте обработчики событий для кнопок "Вверх" и "Вниз"
     const moveUpButton = document.getElementById("move-up-button");
@@ -256,6 +265,7 @@ document.addEventListener('DOMContentLoaded', function () {
       updateYAndSaveToLocalStorage(y - 10);
       const selectedFont = localStorage.getItem('selectedFont') || "'Amatic SC', cursive"; // Получите шрифт из localStorage
       const fontColor = localStorage.getItem('fontColor') || '#004543'; // Получите цвет из localStorage
+      updateFontSettings()
       addQuoteToCanvas(imageUrl, currentQuote, fontColor, fontSize, selectedFont);
     });
 
@@ -263,6 +273,7 @@ document.addEventListener('DOMContentLoaded', function () {
       updateYAndSaveToLocalStorage(y + 10);
       const selectedFont = localStorage.getItem('selectedFont') || "'Amatic SC', cursive"; // Получите шрифт из localStorage
       const fontColor = localStorage.getItem('fontColor') || '#004543'; // Получите цвет из localStorage
+      updateFontSettings()
       addQuoteToCanvas(imageUrl, currentQuote, fontColor, fontSize, selectedFont);
     });
 
@@ -323,7 +334,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // Функция для переноса текста на новую строку, если не умещается
     function wrapText(text, x, y, maxWidth, lineHeight, ctx) {
-      const words = text.split(' ');
+      const words = (text || '').split(' ');
       let line = '';
 
       for (let i = 0; i < words.length; i++) {
@@ -360,7 +371,7 @@ document.addEventListener('DOMContentLoaded', function () {
       addQuoteToCanvas(imageUrl, currentQuote, fontColor, fontSize, selectedFont);
       localStorage.setItem('fontSize', fontSize); // Сохраняем значение fontSize в localStorage
       localStorage.setItem('fontColor', fontColor); // Сохраняем значение fontColor в localStorage
-      // localStorage.setItem('fontFamily', 'Arial');
+
 
 
 
@@ -368,19 +379,17 @@ document.addEventListener('DOMContentLoaded', function () {
 
 
 
-
+    //! ,+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     fontColorInput.addEventListener('input', () => {
       const fontColor = fontColorInput.value;
       localStorage.setItem('fontColor', fontColor); // Сохраняем цвет в localStorage
 
       // Получите и примените значение шрифта из localStorage
-      const savedFont = localStorage.getItem('selectedFont');
-      const fontSize = localStorage.getItem('fontSize') || '40px Arial';
+      // const savedFont = localStorage.getItem('selectedFont');
+      const fontSize = localStorage.getItem('fontSize') || '40px';
 
       addQuoteToCanvas(imageUrl, currentQuote, fontColor, fontSize, savedFont);
     });
-
-    let selectedFont = 'Arial'; // Объявляем переменную selectedFont и устанавливаем значение по умолчанию
 
     fontFamilySelector.addEventListener('input', () => {
       const selectedFont = fontFamilySelector.value;
@@ -388,7 +397,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
       // Получите и примените значение цвета из localStorage
       const fontColor = localStorage.getItem('fontColor') || '#004543';
-      const fontSize = localStorage.getItem('fontSize') || '40px Arial';
+      const fontSize = localStorage.getItem('fontSize') || '40px';
 
       addQuoteToCanvas(imageUrl, currentQuote, fontColor, fontSize, selectedFont);
     });
@@ -447,12 +456,8 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 
 
-
-    // Устанавливаем начальные значения для инпутов
-    // fontSizeInput.value = parseInt(fontSize, 10); // Преобразуем строку в число с системой счисления 10
-
     // fontColorInput.value = fontColor;
-    fontSizeInput.value = parseInt(savedFontSize, 10);
+    fontSizeInput.value = parseInt(savedFontSize, 40);
     fontColorInput.value = savedFontColor;
 
     // Если есть сохраненная фотография, отображаем ее на canvas
@@ -504,7 +509,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
           // Функция для переноса текста на новую строку, если не умещается
           function wrapText(text, x, y, maxWidth, lineHeight) {
-            const words = text.split(' ');
+            const words = (text || '').split(' ');
             let line = '';
 
             for (let i = 0; i < words.length; i++) {
@@ -536,9 +541,6 @@ document.addEventListener('DOMContentLoaded', function () {
         alert('Нет изображения или цитаты для сохранения.');
       }
     });
-
-
-
 
   } catch (error) {
     console.error('An unexpected error occurred:', error);
