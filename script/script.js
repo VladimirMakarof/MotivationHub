@@ -291,16 +291,24 @@ document.addEventListener('DOMContentLoaded', function () {
           ctx.fillStyle = fontColor;
           ctx.font = `${fontSize}px ${selectedFont}`;
 
+          const canvasContainer = document.getElementById('canvas-container');
+          canvasContainer.innerHTML = '';
+
+          // Отступы слева и справа
+          const margin = 20;
+
+          // Рассчитываем ширину холста с учетом отступов
+          const canvasWidth = canvas.width - 2 * margin;
+
           // Начальные координаты для текста - используйте значение y
-          const x = parseInt(localStorage.getItem('quoteX')) || 50;
-          const maxWidth = canvas.width - 20; // Учитываем отступы слева и справа
+          const x = margin; // Начинаем с левого отступа
+          const y = parseInt(localStorage.getItem('quoteY')) || canvas.height - 200;
+
           const lineHeight = fontSize * 1.2; // Высота строки
 
           // Передайте ctx в функцию wrapText
-          wrapText(quoteText, x, y, maxWidth, lineHeight, ctx);
+          wrapText(quoteText, x, y, canvasWidth, lineHeight, ctx);
 
-          const canvasContainer = document.getElementById('canvas-container');
-          canvasContainer.innerHTML = '';
           canvasContainer.appendChild(canvas);
 
           // Сохраняем imageUrl в localStorage
@@ -308,6 +316,9 @@ document.addEventListener('DOMContentLoaded', function () {
         };
       }
     }
+
+
+
 
     // Функция для переноса текста на новую строку, если не умещается
     function wrapText(text, x, y, maxWidth, lineHeight, ctx) {
@@ -462,7 +473,6 @@ document.addEventListener('DOMContentLoaded', function () {
       const savedFontSize = localStorage.getItem('fontSize');
       const selectedFont = localStorage.getItem('selectedFont') || "'Amatic SC', cursive";
 
-
       if (savedImage && savedQuote && savedFontColor && savedFontSize) {
         const canvas = document.createElement('canvas');
         const ctx = canvas.getContext('2d');
@@ -485,7 +495,10 @@ document.addEventListener('DOMContentLoaded', function () {
           const x = parseInt(localStorage.getItem('quoteX')) || 50;
           const y = parseInt(localStorage.getItem('quoteY')) || canvas.height - 200;
 
-          const maxWidth = canvas.width - 20; // Учитываем отступы слева и справа
+          const marginLeft = 20; // Отступ слева
+          const marginRight = 20; // Отступ справа
+          const maxWidth = canvas.width - marginLeft - marginRight; // Учитываем отступы с обеих сторон
+
           const lineHeight = savedFontSize * 1.2; // Высота строки
 
           // Функция для переноса текста на новую строку, если не умещается
@@ -508,7 +521,7 @@ document.addEventListener('DOMContentLoaded', function () {
           }
 
           // Вызываем функцию для переноса текста
-          wrapText(savedQuote, x, y, maxWidth, lineHeight);
+          wrapText(savedQuote, marginLeft, y, maxWidth, lineHeight); // Используйте marginLeft вместо x
 
           const imageUrl = canvas.toDataURL('image/png');
 
@@ -522,6 +535,7 @@ document.addEventListener('DOMContentLoaded', function () {
         alert('Нет изображения или цитаты для сохранения.');
       }
     });
+
 
 
 
