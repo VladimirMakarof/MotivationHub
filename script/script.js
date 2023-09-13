@@ -4,7 +4,7 @@ let fontSize;
 let fontColor;
 let selectedFont;
 
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', function () {
     try {
         const apiKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imh0bmt3c3Bscm5hc2Z5eHV0YXp4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE2OTMwNTU2NjEsImV4cCI6MjAwODYzMTY2MX0.m8SbumGRrHqY0L-DJ0FiMzlfrvdogBe32L-hgJM_NHo";
         const headers = new Headers();
@@ -151,11 +151,11 @@ document.addEventListener('DOMContentLoaded', function() {
 
         function fetchRandomImage(query, collections, orientation, size) {
             fetch(`${endpoint}?query=${query}&collections=${collections}&orientation=${orientation}&fit=clip&w=${size}&h=${size}`, {
-                    method: 'GET',
-                    headers: {
-                        Authorization: `Client-ID ${accessKey}`
-                    }
-                })
+                method: 'GET',
+                headers: {
+                    Authorization: `Client-ID ${accessKey}`
+                }
+            })
                 .then(response => response.json())
                 .then(data => {
                     console.log('Response data:', data);
@@ -227,12 +227,14 @@ document.addEventListener('DOMContentLoaded', function() {
         moveUpButton.addEventListener("click", () => {
             updateYAndSaveToLocalStorage(y - 10);
             updateFontSettings()
+            console.log(fontSize);
             addQuoteToCanvas(imageUrl, currentQuote, fontColor, fontSize, selectedFont);
         });
 
         moveDownButton.addEventListener("click", () => {
             updateYAndSaveToLocalStorage(y + 10);
             updateFontSettings()
+            console.log(fontSize);
             addQuoteToCanvas(imageUrl, currentQuote, fontColor, fontSize, selectedFont);
         });
 
@@ -308,7 +310,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
         function setupFontColorInput() {
             const fontColorInput = document.getElementById("font-color-input");
-            let fontColor = localStorage.getItem('fontColor');
+            fontColor = localStorage.getItem('fontColor');
 
             if (!fontColor) {
                 fontColor = '#004543';
@@ -331,7 +333,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
         function setupFontFamilySelector() {
             const fontFamilySelector = document.getElementById("font-family-selector");
-            let selectedFont = localStorage.getItem("selectedFont");
+            selectedFont = localStorage.getItem("selectedFont");
 
             if (!selectedFont) {
                 // Установите начальное значение по умолчанию
@@ -356,7 +358,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
         function setupFontSizeInput() {
             const fontSizeInput = document.getElementById("font-size-input");
-            let fontSize = localStorage.getItem('fontSize');
+            fontSize = localStorage.getItem('fontSize');
 
             if (!fontSize) {
                 fontSize = '50';
